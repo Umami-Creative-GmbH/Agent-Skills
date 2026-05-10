@@ -187,9 +187,9 @@ const startsAt = Temporal.ZonedDateTime.from(
 );
 ```
 
-## Sub References
+## Refs
 
-- [PostgreSQL: Safely Parse and Persist Temporal Values](./sub-references/postgresql-temporal-persistence.md)
+- [PostgreSQL: Safely Parse and Persist Temporal Values](./refs/postgresql-temporal-persistence.md)
 
 ## Delivery Checklist for the Agent
 

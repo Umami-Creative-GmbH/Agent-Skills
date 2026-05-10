@@ -1,6 +1,6 @@
 # PostgreSQL: Safely Parse and Persist Temporal Values
 
-Use this sub reference when migrating database boundaries to `Temporal` in PostgreSQL-backed systems.
+Use this ref when migrating database boundaries to `Temporal` in PostgreSQL-backed systems.
 
 ## Core Principles (Applied to PostgreSQL)
 
