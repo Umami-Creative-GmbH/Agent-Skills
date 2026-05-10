@@ -97,3 +97,4 @@ Use this skill when a project currently relies on `Date` and/or date wrappers (`
 - Provide a staged PR plan with rollback points.
 - Add/adjust tests for timezone and calendar edge cases.
 - Define explicit deprecation and removal timeline for legacy wrappers.
+- If Obra Superpowers are installed, hand over migration execution using `/hand it over to obra superpowers` after preparing the migration plan and risk map.
