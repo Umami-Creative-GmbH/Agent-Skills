@@ -116,9 +116,8 @@ const reminder = new Date(start.getTime() - 30 * 60 * 1000);
 
 ```ts
 // After (explicit zone)
-const userZone = "Europe/Berlin";
 const start = Temporal.ZonedDateTime.from("2026-03-29T09:00:00+01:00[Europe/Berlin]");
-const reminder = start.subtract({ minutes: 30 }).withTimeZone(userZone);
+const reminder = start.subtract({ minutes: 30 });
 ```
 
 ### 3) Calendar-only domain value (`YYYY-MM-DD`)
@@ -159,7 +158,7 @@ const isExpired = now.getTime() > expiresAt.epochMilliseconds;
 // ✅ Prefer one model in domain code
 const now = Temporal.Now.instant();
 const expiresAt = now.add({ hours: 2 });
-const isExpired = now.epochMilliseconds > expiresAt.epochMilliseconds;
+const isExpired = Temporal.Instant.compare(now, expiresAt) > 0;
 ```
 
 ### Avoid 2: Epoch math for calendar rules
@@ -171,7 +170,7 @@ const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
 ```ts
 // ✅ Prefer domain arithmetic
-const tomorrow = Temporal.Now.zonedDateTimeISO("America/New_York").add({ days: 1 });
+const tomorrow = Temporal.Now.plainDateISO("America/New_York").add({ days: 1 });
 ```
 
 ### Avoid 3: Parsing local times without zone ownership
