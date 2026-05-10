@@ -90,6 +90,107 @@ Use this skill when a project currently relies on `Date` and/or date wrappers (`
 - Date formatting via locale -> `temporalValue.toLocaleString(locale, options)`
 - Manual timezone math -> `instant.toZonedDateTimeISO(timeZone)` and operate there
 
+## Migration Examples (Before -> After)
+
+### 1) Timestamp persistence (`Date` -> `Temporal.Instant`)
+
+```ts
+// Before
+const createdAt = new Date();
+db.insert({ createdAt: createdAt.toISOString() });
+```
+
+```ts
+// After
+const createdAt = Temporal.Now.instant();
+db.insert({ createdAt: createdAt.toString() }); // ISO string with Z
+```
+
+### 2) User-local scheduling with explicit timezone
+
+```ts
+// Before (implicit server timezone)
+const start = new Date("2026-03-29T09:00:00");
+const reminder = new Date(start.getTime() - 30 * 60 * 1000);
+```
+
+```ts
+// After (explicit zone)
+const start = Temporal.ZonedDateTime.from("2026-03-29T09:00:00+01:00[Europe/Berlin]");
+const reminder = start.subtract({ minutes: 30 });
+```
+
+### 3) Calendar-only domain value (`YYYY-MM-DD`)
+
+```ts
+// Before
+const dueDate = new Date("2026-02-01"); // can drift via timezone conversion
+```
+
+```ts
+// After
+const dueDate = Temporal.PlainDate.from("2026-02-01");
+```
+
+### 4) Boundary adapters during gradual migration
+
+```ts
+// Compatibility adapter at system boundaries only
+export const toInstant = (value: Date | Temporal.Instant): Temporal.Instant =>
+  value instanceof Date ? Temporal.Instant.from(value.toISOString()) : value;
+
+export const toDate = (value: Temporal.Instant): Date =>
+  new Date(value.epochMilliseconds);
+```
+
+## What to Avoid (Anti-Patterns)
+
+### Avoid 1: Mixing `Date` and `Temporal` in domain logic
+
+```ts
+// ❌ Avoid
+const now = new Date();
+const expiresAt = Temporal.Now.instant().add({ hours: 2 });
+const isExpired = now.getTime() > expiresAt.epochMilliseconds;
+```
+
+```ts
+// ✅ Prefer one model in domain code
+const now = Temporal.Now.instant();
+const expiresAt = now.add({ hours: 2 });
+const isExpired = Temporal.Instant.compare(now, expiresAt) > 0;
+```
+
+### Avoid 2: Epoch math for calendar rules
+
+```ts
+// ❌ Avoid (DST/month boundaries can break assumptions)
+const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+```
+
+```ts
+// ✅ Prefer domain arithmetic
+const tomorrow = Temporal.Now.plainDateISO("America/New_York").add({ days: 1 });
+```
+
+### Avoid 3: Parsing local times without zone ownership
+
+```ts
+// ❌ Avoid
+const startsAt = Temporal.PlainDateTime.from("2026-10-25T01:30:00");
+```
+
+```ts
+// ✅ Prefer explicit zone and disambiguation strategy
+const startsAt = Temporal.ZonedDateTime.from(
+  "2026-10-25T01:30:00+02:00[Europe/Berlin]"
+);
+```
+
+## Refs
+
+- [PostgreSQL: Safely Parse and Persist Temporal Values](./refs/postgresql-temporal-persistence.md)
+
 ## Delivery Checklist for the Agent
 
 - Confirm runtime support or polyfill strategy for `Temporal`.
